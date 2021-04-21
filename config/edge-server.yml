@@ -1,0 +1,57 @@
+security:
+  oauth2:
+    client:
+      clientId:             ac3343ff8094423e8edca937dfb99530
+      clientSecret:         d6b9fc155d0740e4ba9999a2ec07cc25
+      accessTokenUri:       https://accounts.spotify.com/api/token
+      userAuthorizationUri: https://accounts.spotify.com/authorize
+      scope:
+        - user-read-recently-played
+        - user-top-read
+        - user-follow-modify
+        - user-follow-read
+        - playlist-read-private
+        - user-read-private
+        - user-read-email
+        - user-library-read
+        - playlist-read-collaborative
+    resource:
+      userInfoUri: https://api.spotify.com/v1/me
+
+server:
+  port: 80
+
+ribbon:
+  # Needed for connection to product-service, because of long(er) response time from Spotify & Discogs
+  ReadTimeout:    10000
+
+zuul:
+  ignored-services: "*"
+  ignoredPatterns:
+    - "/actuator/**"
+    - "/authenticated"
+  routes:
+    spotify-service:
+      path:             "/spotify/**"
+      service-id:       spotify-service
+      strip-prefix:     true
+      sensitiveHeaders: Cookie,Set-Cookie
+    discogs-service:
+      path:             "/discogs/**"
+      service-id:       discogs-service
+      strip-prefix:     false
+      sensitiveHeaders: Cookie,Set-Cookie,Authorization
+    product-service:
+      path:             "/product/**"
+      service-id:       product-service
+      strip-prefix:     true
+      sensitiveHeaders: Cookie,Set-Cookie,Authorization
+    frontend:
+      path:             "/**"
+      service-id:       frontend
+      stripPrefix:      false
+      sensitiveHeaders: Cookie,Set-Cookie,Authorization
+
+eureka:
+  instance:
+    prefer-ip-address: true
